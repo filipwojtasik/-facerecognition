@@ -1,14 +1,13 @@
 <html>
   <head>
     <title>App</title>
-	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='st.css') }}">
+	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
   </head>
   <body>
     <h1>APP</h1>
 	<div id="app3">
-		<button class="But" id="help">Help</button>
-		<button class="But" id="stop">Stop</button>
-		<a  href="{{ url_for('index') }}"><button class="But">REFRESH</button></a>
+		<button class="But" id="net">Neural Network</button>
+		<a  href="{{ url_for('index') }}"><button class="But">Refresh</button></a>
 		
 		<script type="text/javascript" src="{{ url_for('static', filename='app.js')  }}"></script>      
 	</div>
@@ -16,5 +15,6 @@
 	<img id="bg" src="{{ url_for('video_feed') }}">
 	<img src="{{url_for('face')}}" width="640" height="480" />
 	</div>
+	<pre>{{ content }}</pre>
   </body>
 </html>

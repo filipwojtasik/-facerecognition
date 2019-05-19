@@ -190,65 +190,70 @@ class Siamese_Network:
     def train(self, model):
         model.fit_generator(self.gen(batch_size))
 
+def modeling():
+    weights = init_weights((1000, 1))
+    bias = init_bias((1000, 1))
+    model = get_siamese_model((200, 200, 3))
+    model.summary()
 
-weights = init_weights((1000, 1))
-bias = init_bias((1000, 1))
-model = get_siamese_model((200, 200, 3))
-model.summary()
+    optimizer = Adam(lr=0.00006)
+    model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
-optimizer = Adam(lr=0.00006)
-model.compile(loss="binary_crossentropy", optimizer=optimizer)
+    loader = Siamese_Network()
 
-loader = Siamese_Network()
-
-milestone = 2
-batch_size = 32
-iterations = 100
-pics_at_once = 25
-num_of_pics = 500
-best = -1
-
-#TRAINING
-#Once trained you can momment this
-print("Training has just started")
-print("-------------------------------------")
-t_start = time.time()
-for i in range(1, iterations):
-    (inputs, targets) = loader.batch(batch_size)
-    loss = model.train_on_batch(inputs, targets)
-    print("\n \n")
-    print("Loss: {0} \n".format(loss))
-    print("Iteration: {0}".format(i))
-    if i % milestone == 0:
-        print("Time for {0} iterations: {1}".format(i, time.time() - t_start))
-        val_acc = loader.try_pairs(model, pics_at_once, num_of_pics)
-        if val_acc >= best:
-            print("Current best: {0}, previous best: {1}".format(val_acc, best))
-            weights_path = os.path.join(data_path, "model.h5")
-            print("Saving weights \n")
-            model.save_weights(weights_path)
-            best = val_acc
+    milestone = 2
+    batch_size = 32
+    iterations = 100
+    pics_at_once = 25
+    num_of_pics = 500
+    best = -1
 
 
-#End of potential comment
+    weights_path = os.path.join(data_path, "model.h5")
+    model.load_weights(weights_path)
+    return model
 
-weights_path = os.path.join(data_path, "model.h5")
-model.load_weights(weights_path)
+def training():
 
-cas = np.arange(1, 25, 1)
-val, train = [], []
-num_of_pics = 200
-for N in cas:
-    val.append(loader.try_pairs_val(model, N, num_of_pics))
-    train.append(loader.try_pairs(model, N, num_of_pics))
+    print("Training has just started")
+    print("-------------------------------------")
+    t_start = time.time()
+    for i in range(1, iterations):
+        (inputs, targets) = loader.batch(batch_size)
+        loss = model.train_on_batch(inputs, targets)
+        print("\n \n")
+        print("Loss: {0} \n".format(loss))
+        print("Iteration: {0}".format(i))
+        if i % milestone == 0:
+            print("Time for {0} iterations: {1}".format(i, time.time() - t_start))
+            val_acc = loader.try_pairs(model, pics_at_once, num_of_pics)
+            if val_acc >= best:
+                print("Current best: {0}, previous best: {1}".format(val_acc, best))
+                weights_path = os.path.join(data_path, "model.h5")
+                print("Saving weights \n")
+                model.save_weights(weights_path)
+                best = val_acc
 
-fig, ax = plt.subplots(1)
 
-ax.plot(cas, train, label="training")
-ax.plot(cas, val, label="validation")
-plt.xlabel("Number of classes")
-plt.ylabel("% Accuracy")
-box = ax.get_position()
-ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
+
+
+
+
+def checking():
+    cas = np.arange(1, 25, 1)
+    val, train = [], []
+    num_of_pics = 200
+    for N in cas:
+        val.append(loader.try_pairs_val(model, N, num_of_pics))
+        train.append(loader.try_pairs(model, N, num_of_pics))
+
+    fig, ax = plt.subplots(1)
+
+    ax.plot(cas, train, label="training")
+    ax.plot(cas, val, label="validation")
+    plt.xlabel("Number of classes")
+    plt.ylabel("% Accuracy")
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.show()

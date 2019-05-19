@@ -3,8 +3,12 @@ from flask import  Flask, render_template, Response, jsonify, request, stream_wi
 import time
 import threading
 from camera2 import Camera as camera2
-buf=False
+import numpy as np
+import res
+import network
 
+buf=False
+content="To start click neural network button and wait"
 class VideoCamera(object):
     def __init__(self):
 
@@ -56,7 +60,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html',content=content)
 
 def gen(camera,buf):
 
@@ -80,7 +84,7 @@ def picture():
 
 
     json = request.get_json()
-    camera=VideoCamera()
+
     status = json['status']
 
     if status == "true":
@@ -94,7 +98,7 @@ def picture():
 @app.route('/video_feed')
 
 def video_feed():
-    print (buf)
+
     if buf==False:
         return Response(stream_with_context(gen(VideoCamera(),buf)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -114,6 +118,45 @@ def face():
 
 
 
+@app.route('/net', methods=['POST'])
+def net():
+    json = request.get_json()
+
+    status = json['status']
+
+    if status == "true":
+
+
+        model=network.modeling()
+        res.resizee()
+
+        numbers = np.random.randint(30, size=(3)) + 10
+
+        img1 = cv2.imread('zdj_resized/%d.jpg' % numbers[0])
+        img1 = img1.reshape(1, 200, 200, 3)
+        img2 = cv2.imread('zdj_resized/%d.jpg' % numbers[1])
+        img2 = img2.reshape(1, 200, 200, 3)
+        img3 = cv2.imread('zdj_resized/%d.jpg' % numbers[2])
+        img3 = img3.reshape(1, 200, 200, 3)
+        img_real = cv2.imread('zdj_resized/74.jpg')
+        img_real = img_real.reshape(1, 200, 200, 3)
+        inp = [img1, img2]
+        inp2 = [img_real, img3]
+        pro = model.predict(inp)
+        pro2 = model.predict(inp2)
+
+
+        if (pro2/pro)>0.9 and (pro2/pro)<1.1:
+            content = "True"
+        else:
+            content = "False"
+
+        print(content)
+
+        return jsonify(result="started")
+    else:
+
+        return jsonify(result="stopped")
 
 
 
